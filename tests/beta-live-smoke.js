@@ -2,7 +2,7 @@ async (page) => {
   const errors = [];
   const check = (ok, label) => { if (!ok) throw new Error(label); };
   page.on('pageerror', error => errors.push(error.message));
-  await page.goto('https://dre645494896.github.io/-/');
+  await page.goto('https://dre645494896.github.io/MinTodo/');
   await page.locator('#accountStatus').click();
   await page.locator('#authModeBtn').click();
   await page.locator('#authEmail').fill(`beta-live-${Date.now()}@example.com`);

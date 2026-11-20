@@ -25,13 +25,15 @@ async (page) => {
     tasks = [{ id: 'guest-task', title: 'Guest original', category: 'work', date: '2026-09-18' }];
     persist();
   });
-  check(await page.evaluate(() => getAuthRedirectUrl()) === 'https://dre645494896.github.io/-/', 'local requests use production redirect');
+  const productionUrl = 'https://dre645494896.github.io/MinTodo/';
+  check(await page.evaluate(() => getAuthRedirectUrl()) === productionUrl, 'local requests use production redirect');
   await page.locator('#accountStatus').click();
   await page.locator('#authForgotBtn').click();
   await page.locator('#authEmail').fill('test@example.com');
   await page.locator('#authSubmitBtn').click();
   await page.waitForFunction(() => document.querySelector('#authStatusText').textContent.includes('你将收到'));
-  check(calls.filter(c => c.url.includes('/recover')).every(c => c.url.includes('redirect_to=https%3A%2F%2Fdre645494896.github.io%2F-%2F')), 'recovery POST redirect');
+  const recoveryRequest = calls.find(c => c.method === 'POST' && new URL(c.url).pathname.endsWith('/recover'));
+  check(recoveryRequest && new URL(recoveryRequest.url).searchParams.get('redirect_to') === productionUrl, 'recovery POST redirect');
   await page.goto('http://127.0.0.1:4194/index.html#access_token=test-token&refresh_token=test-refresh&type=recovery');
   await page.locator('#authPasswordConfirm').waitFor({ state: 'visible' });
   check(await page.evaluate(() => !location.hash), 'URL tokens removed');

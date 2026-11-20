@@ -7,7 +7,7 @@ On 2026-09-18 an unauthenticated diagnostic request using an intentionally inval
 ## Supabase dashboard changes
 
 - Project: `dnmszveczfcrbtzdehoj`.
-- Authentication > URL Configuration: set Site URL to `https://dre645494896.github.io/-/`.
+- Authentication > URL Configuration: set Site URL to `https://dre645494896.github.io/MinTodo/`.
 - Add that exact URL to allowed Redirect URLs. Preserve the existing native `jijiandaiban://auth/callback` entry. Do not add broad wildcard origins or disable email confirmation.
 - Authentication > Email Templates > Magic Link: include the server-issued `{{ .Token }}` for numeric email sign-in. Do not substitute a recovery template for this template.
 - Reset Password: retain `{{ .ConfirmationURL }}` so Supabase verifies the recovery token before returning to the application.
