@@ -1063,16 +1063,6 @@
     .mini-btn.good:hover { color: var(--green); border-color: #a7f3d0; background: #ecfdf5; }
     .mini-btn.bad:hover { color: var(--red); border-color: #fecaca; background: #fff1f2; }
 
-    .empty-hint {
-      color: var(--quiet);
-      font-size: 12px;
-      opacity: 0;
-      transition: opacity .16s ease;
-      padding: 6px 2px;
-    }
-
-    .day:hover .empty-hint { opacity: 1; }
-
     .modal-backdrop {
       position: fixed;
       inset: 0;
@@ -1685,7 +1675,10 @@
       position: fixed;
       left: 50%;
       bottom: 22px;
-      z-index: 70;
+      z-index: 110;
+      width: max-content;
+      max-width: calc(100vw - 32px);
+      text-align: center;
       transform: translateX(-50%) translateY(20px);
       border-radius: 8px;
       background: #111827;
@@ -2164,26 +2157,17 @@
       justify-content: flex-end;
     }
 
-    @media (max-width: 1040px) {
+    @media (721px <= width <= 1040px) {
+      :root { --topbar-h: 106px; }
       .topbar {
-        grid-template-columns: 1fr auto;
+        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-areas: "month actions" "category category";
+        gap: 4px 12px;
+        padding: 8px 16px;
       }
-      .topbar-left {
-        grid-column: 1 / -1;
-        justify-content: space-between;
-        flex-wrap: wrap;
-      }
-      .filters {
-        position: static;
-        transform: none;
-        grid-column: 1 / -1;
-        width: max-content;
-        justify-self: center;
-      }
-      .actions {
-        grid-column: 1 / -1;
-        justify-content: flex-end;
-      }
+      .topbar-left { grid-area: month; }
+      .filters { grid-area: category; }
+      .actions { grid-area: actions; }
     }
 
     @media (max-width: 720px) {
@@ -2280,19 +2264,357 @@
       .bulk-row { grid-template-columns: 1fr; }
       .task-actions { opacity: 1; }
     }
+    /* Visual system: opaque content, translucent navigation only. */
+    :root {
+      --bg: #f5f6f8;
+      --panel-soft: #eff1f5;
+      --line: #dce0e7;
+      --line-strong: #aeb8c7;
+      --text: #1c2029;
+      --muted: #475569;
+      --quiet: #536179;
+      --primary: #005cc5;
+      --primary-soft: #eaf2ff;
+      --red: #b42337;
+      --radius: 12px;
+      --control-radius: 999px;
+      --sheet-radius: 22px;
+      --nav-surface: #f7f8fb;
+      --glass-fill: linear-gradient(155deg, rgba(255,255,255,.76), rgba(241,247,255,.44) 66%, rgba(255,255,255,.64));
+      --glass-edge: inset 0 1px 0 rgba(255,255,255,.94), inset 0 -1px 0 rgba(76,100,144,.11), 0 6px 19px rgba(36,54,89,.10);
+      --control-hover: rgba(26,55,98,.08);
+      --shadow: 0 10px 28px rgba(31, 41, 51, .10);
+      --weekday-h: 32px;
+    }
+
+    body {
+      background: radial-gradient(ellipse at 10% 0, #dfe9fc 0, transparent 55%),
+                  radial-gradient(ellipse at 96% 6%, #e6e0f6 0, transparent 52%), var(--bg);
+      background-attachment: fixed;
+    }
+    .topbar, .mobile-top { background: transparent; border-color: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; }
+    .month-nav, .category-toggle, .topbar .actions, .mobile-toolbar,
+    .mobile-date-strip:not(:empty), .mobile-bottom-inner, .desktop-search-panel, .modal {
+      background: var(--nav-surface);
+      border: 0;
+      box-shadow: var(--glass-edge);
+    }
+    @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+      .month-nav, .category-toggle, .topbar .actions, .mobile-toolbar,
+      .mobile-date-strip:not(:empty), .mobile-bottom-inner, .desktop-search-panel, .modal {
+        background: var(--glass-fill);
+        -webkit-backdrop-filter: blur(19px) saturate(1.48);
+        backdrop-filter: blur(19px) saturate(1.48);
+      }
+    }
+
+    @media (min-width: 1041px) {
+      .topbar { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 12px; padding-block: 10px; }
+    }
+    .month-nav, .topbar .actions { gap: 3px; padding: 3px; border-radius: var(--control-radius); }
+    .month-label { min-width: 104px; font-size: 17px; }
+    .filters { position: static; transform: none; }
+    .topbar .actions { flex-wrap: nowrap; }
+    .category-toggle { gap: 2px; padding: 4px; border-radius: var(--control-radius); }
+    .category-toggle-btn { min-width: 72px; min-height: 32px; border: 0; border-radius: var(--control-radius); }
+    .category-toggle-btn.active { background: rgba(255,255,255,.76); box-shadow: var(--glass-edge); }
+    .btn, .account-pill { border: 0; border-radius: var(--control-radius); }
+    .btn:not(.primary):not(.danger), .topbar .account-pill:not(.syncing):not(.synced):not(.error) { background: transparent; }
+    .modal .btn:not(.primary):not(.danger) { background: rgba(36,60,95,.065); }
+    :is(.btn:not(.primary):not(.danger), .account-pill:not(:disabled), .category-toggle-btn:not(.active),
+        .mobile-icon-btn, .mobile-title-btn:not(:disabled), .mobile-bottom-btn):hover { background: var(--control-hover); }
+    :is(.btn.primary, #mobileAddBtn) { background: linear-gradient(165deg,#1678e1,#0058bb 72%); color: #fff; box-shadow: inset 0 1px rgba(255,255,255,.34); }
+    :is(.btn.primary, #mobileAddBtn):hover { background: #0053b2; }
+    .ui-icon, .desktop-search .ui-icon, .mobile-toolbar .ui-icon, .mobile-bottom-btn .ui-icon {
+      display: block;
+      width: 20px;
+      height: 20px;
+      flex: 0 0 auto;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.9;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      pointer-events: none;
+    }
+    :is(.btn.icon, .mobile-icon-btn, .mobile-bottom-btn.icon, .mini-btn, .day-action, .add-day) {
+      display: inline-grid;
+      place-items: center;
+      padding: 0;
+      line-height: 1;
+    }
+    :is(.mini-btn, .day-action, .add-day) .ui-icon { width: 15px; height: 15px; }
+    :is(.mini-btn, .day-action:not(.active), .add-day), .task.priority-urgent .mini-btn { border-color: transparent; background: transparent; }
+    :is(.mini-btn, .day-action, .add-day):not(.active):hover { background: var(--control-hover); border-color: transparent; }
+    .task.priority-urgent .mini-btn:hover { color: #fff; background: rgba(255,255,255,.22); }
+    .mobile-icon-btn.active { background: var(--primary-soft); color: var(--primary); }
+    .btn.danger { box-shadow: none; }
+    .btn.danger:hover { background: #9c1830; border-color: #9c1830; }
+    .weekday { background: #f0f4fb; backdrop-filter: none; }
+    .weekday span { letter-spacing: 0; font-weight: 650; }
+    .date-num, .mobile-date-btn .num { font-variant-numeric: tabular-nums; }
+    .day.rest-day:not(.is-today):not(.selected-day):not(.has-special):not(.day-good):not(.day-bad)
+      :is(.date-num, .date-inline-meta, .date-inline-chip, .date-inline-sep, .rest-day-pill) { color: var(--quiet); }
+    .day.selected-day:not(.drag-over) { outline: 2px solid var(--primary); outline-offset: -2px; }
+    .task, .day-note { border-radius: 8px; }
+    .task.done .task-title, .day-note.done .day-note-title { text-decoration: line-through; }
+    .drop-marker, .note-drop-marker { background: var(--primary); }
+    .modal { border-radius: var(--sheet-radius); }
+    .modal h2 { color: var(--text); }
+    .settings-tabs, .priority-segment { background: rgba(44,65,99,.075); border: 0; border-radius: var(--radius); }
+    .settings-tab, .priority-option { border-color: transparent; border-radius: 8px; }
+    .modal :is(textarea, input:not([type='checkbox']):not([type='radio']), select, [contenteditable='true']) { background-color: #fff; border-color: #8793a4; }
+    :is(button, input, select, textarea, [contenteditable='true'], [tabindex]):focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
+
+    @media (max-width: 720px) {
+      .mobile-top { padding-bottom: 8px; }
+      .toast { bottom: calc(82px + env(safe-area-inset-bottom)); }
+      .mobile-title-btn, .mobile-actions, .mobile-bottom-btn { box-shadow: none; }
+      .mobile-toolbar { border-radius: var(--control-radius); padding: 2px 4px 2px 10px; }
+      .mobile-title-btn, .mobile-actions { background: transparent; }
+      .mobile-title-btn { padding-inline: 0 12px; }
+      .mobile-actions { padding: 0; gap: 3px; }
+      .mobile-date-strip { margin-top: 8px; border-radius: 18px; }
+      .mobile-date-btn:not(.active) { background: transparent; }
+      .mobile-date-btn:focus-visible { outline-offset: -2px; }
+      .mobile-content { background: transparent; }
+      .mobile-day-card, .mobile-month-block, .mobile-year-section { background: var(--panel); border-color: transparent; box-shadow: 0 6px 26px rgba(26,55,98,.06); }
+      .mobile-day-title strong { font-size: 22px; font-weight: 720; }
+      .mobile-bottom { background: none; }
+      .mobile-bottom-inner {
+        width: max-content;
+        max-width: 100%;
+        gap: 4px;
+        margin-inline: auto;
+        padding: 4px;
+        border-radius: var(--control-radius);
+      }
+      .mobile-bottom-btn { background: transparent; font-size: 16px; }
+      .modal { border-radius: var(--sheet-radius) var(--sheet-radius) 0 0; }
+      .modal-actions { background: var(--panel); }
+    }
+
+    @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+      .month-nav, .category-toggle, .topbar .actions, .mobile-toolbar,
+      .mobile-date-strip:not(:empty), .mobile-bottom-inner, .desktop-search-panel, .modal {
+        background: var(--nav-surface);
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+      }
+    }
+    @media (prefers-contrast: more) {
+      :is(.btn, .account-pill, .category-toggle-btn, .mobile-icon-btn, .mobile-bottom-btn, .mini-btn, .day-action, .add-day) {
+        outline: 1px solid currentColor;
+        outline-offset: -1px;
+      }
+      :is(.btn, .account-pill, .category-toggle-btn, .mobile-icon-btn, .mobile-bottom-btn, .mini-btn, .day-action, .add-day):focus-visible {
+        outline: 2px solid var(--primary);
+        outline-offset: 2px;
+      }
+    }
+    /* MinTodo glass and spacing scale: 4 / 8 / 12 / 16 / 24 CSS px. */
+    :root {
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-6: 24px;
+      --glass-fill: linear-gradient(150deg, rgb(255 255 255 / .27), rgb(236 244 255 / .12) 55%, rgb(255 255 255 / .20));
+      --glass-edge: inset 1px 1px 1.5px rgb(255 255 255 / .98),
+                    inset -1px -1px 1.5px rgb(255 255 255 / .75),
+                    inset 0 5px 8px -5px rgb(255 255 255 / .78),
+                    inset 0 -5px 8px -6px rgb(42 66 105 / .35),
+                    0 1px 2px rgb(48 66 102 / .16), 0 8px 24px rgb(50 73 108 / .10);
+    }
+    .calendar-header {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      background: var(--nav-surface);
+      border-radius: 0 0 18px 18px;
+      box-shadow: var(--glass-edge);
+    }
+    .calendar-header :is(.topbar, .weekday) {
+      position: relative;
+      top: auto;
+      background: transparent;
+      border: 0;
+    }
+    .calendar-header .weekday { z-index: auto; }
+    /* The header owns the material. Its control groups only provide layout. */
+    .calendar-header :is(.month-nav, .category-toggle, .topbar .actions) {
+      background: transparent;
+      border: 0;
+      box-shadow: none;
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+    }
+    .calendar-header #newTaskBtn { background: var(--primary); box-shadow: none; }
+    .calendar-header #newTaskBtn:hover { background: #0053b2; }
+    .category-toggle {
+      position: relative;
+      isolation: isolate;
+      --segment-offset: 0%;
+    }
+    .category-toggle:has([data-category-view='personal'].active) { --segment-offset: calc(100% + 2px); }
+    .category-toggle::before {
+      content: '';
+      position: absolute;
+      inset: 4px auto 4px 4px;
+      width: calc((100% - 10px) / 2);
+      border-radius: inherit;
+      background: linear-gradient(130deg, rgb(255 255 255 / .75), rgb(239 248 255 / .45));
+      box-shadow: var(--glass-edge);
+      transform: translateX(var(--segment-offset));
+      transition: transform 340ms cubic-bezier(.24,.86,.28,1.08);
+      pointer-events: none;
+      z-index: -1;
+    }
+    .category-toggle .category-toggle-btn.active { background: transparent; box-shadow: none; }
+    .category-toggle-btn { transition: color 180ms ease; }
+    #settingsTabs, #taskPriorityOptions {
+      position: relative;
+      isolation: isolate;
+      display: grid;
+      grid-template-columns: repeat(var(--segments), minmax(0, 1fr));
+      gap: 0;
+      padding: var(--space-1);
+      --selected-index: 0;
+    }
+    #settingsTabs { --segments: 4; }
+    #taskPriorityOptions { --segments: 3; grid-template-columns: repeat(3, minmax(44px, 1fr)); }
+    #settingsTabs:has([data-settings-tab='calendar'].active), #taskPriorityOptions:has([data-priority='high'].active) { --selected-index: 1; }
+    #settingsTabs:has([data-settings-tab='tasks'].active), #taskPriorityOptions:has([data-priority='urgent'].active) { --selected-index: 2; }
+    #settingsTabs:has([data-settings-tab='data'].active) { --selected-index: 3; }
+    :is(#settingsTabs, #taskPriorityOptions)::before {
+      content: '';
+      position: absolute;
+      inset: var(--space-1) auto var(--space-1) var(--space-1);
+      width: calc((100% - 2 * var(--space-1)) / var(--segments));
+      border-radius: 8px;
+      background: var(--selection-glass, linear-gradient(135deg, #fff, rgb(245 249 255 / .54)));
+      box-shadow: var(--glass-edge);
+      transform: translateX(calc(var(--selected-index) * 100%));
+      transition: transform 340ms cubic-bezier(.24,.86,.28,1.08), background-color 180ms ease;
+      z-index: -1;
+      pointer-events: none;
+    }
+    #taskPriorityOptions:has([data-priority='high'].active) { --selection-glass: #fff1f2; }
+    #taskPriorityOptions:has([data-priority='urgent'].active) { --selection-glass: #991b1b; }
+    #settingsTabs .settings-tab { min-width: 0; padding-inline: var(--space-1); }
+    :is(#settingsTabs, #taskPriorityOptions) button.active { background: transparent; border-color: transparent; box-shadow: none; }
+    :is(#settingsTabs, #taskPriorityOptions) button:focus-visible { outline-offset: -2px; }
+    .settings-grid, .settings-panel, .settings-two, .category-settings, .special-editor, #taskForm .modal-grid { gap: var(--space-4); }
+    .setting-row { gap: var(--space-3); }
+    .setting-field, .setting-row label, .category-setting { gap: var(--space-2); }
+    .settings-tabs { margin-bottom: var(--space-4); }
+    .settings-panel :is(.setting-field, .setting-row) { margin: 0; }
+    #taskForm :is(#taskDate, #taskCategory, #taskProgress, #taskNote) {
+      background: rgb(222 232 247 / .44);
+      border-color: transparent;
+      box-shadow: inset 0 1px 3px rgb(41 61 95 / .07);
+    }
+    #taskForm #taskTitle, #bulkForm #bulkText {
+      background: transparent;
+      border: 0;
+      box-shadow: none;
+      outline: none;
+      resize: none;
+      padding: var(--space-2) 0;
+    }
+    #bulkForm #bulkText { min-height: 3.5em; }
+    #taskForm #taskTitle:focus, #bulkForm #bulkText:focus { caret-color: var(--primary); }
+    .template-strip:empty, .bulk-preview:empty, .auth-status:empty, .mobile-search-results:empty { display: none; }
+    #dayHeightRange {
+      --range-fill: 0%;
+      appearance: none;
+      -webkit-appearance: none;
+      margin: 0;
+      padding: 0;
+      min-height: 32px;
+      border: 0;
+      border-radius: 0;
+      background: linear-gradient(to right, var(--primary) var(--range-fill), #c5cfdd var(--range-fill)) center / 100% 6px no-repeat;
+      box-shadow: none;
+      cursor: pointer;
+    }
+    #dayHeightRange::-webkit-slider-runnable-track { height: 6px; background: transparent; }
+    #dayHeightRange::-moz-range-track { height: 6px; background: transparent; }
+    #dayHeightRange::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px; height: 16px; margin-top: -5px; border: 0; border-radius: 50%; background: var(--primary);
+    }
+    #dayHeightRange::-moz-range-thumb {
+      width: 16px; height: 16px; border: 0; border-radius: 50%; background: var(--primary);
+    }
+    @media (forced-colors: active) {
+      #dayHeightRange { appearance: auto; -webkit-appearance: auto; background: transparent; }
+      #dayHeightRange::-webkit-slider-thumb { -webkit-appearance: auto; }
+    }
+    @media (prefers-contrast: more), (forced-colors: active) {
+      #taskForm #taskTitle:focus-visible, #bulkForm #bulkText:focus-visible { outline: 2px solid currentColor; }
+    }
+    @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+      .calendar-header {
+        background: var(--glass-fill);
+        -webkit-backdrop-filter: blur(9px) saturate(1.38) brightness(1.05);
+        backdrop-filter: blur(9px) saturate(1.38) brightness(1.05);
+      }
+      .mobile-toolbar, .mobile-date-strip:not(:empty), .mobile-bottom-inner {
+        -webkit-backdrop-filter: blur(9px) saturate(1.38) brightness(1.05);
+        backdrop-filter: blur(9px) saturate(1.38) brightness(1.05);
+      }
+      .modal { background: linear-gradient(145deg, rgb(255 255 255 / .81), rgb(240 246 255 / .69)); }
+    }
+    @media (max-width: 720px) {
+      .calendar-header { display: none; }
+      .settings-grid { min-height: 0; }
+    }
+    @media (prefers-reduced-transparency: reduce), (prefers-contrast: more), (forced-colors: active) {
+      .calendar-header, .mobile-toolbar, .mobile-date-strip:not(:empty), .mobile-bottom-inner, .modal {
+        background: var(--nav-surface);
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+      }
+      #taskForm :is(#taskDate, #taskCategory, #taskProgress, #taskNote) { background: var(--panel); border-color: var(--muted); }
+    }
+    @media (forced-colors: active) { .category-toggle-btn.active { outline: 2px solid Highlight; } }
+    @media (prefers-reduced-motion: reduce) {
+      .category-toggle::before, .category-toggle-btn, :is(#settingsTabs, #taskPriorityOptions)::before { transition: none; }
+      html { scroll-behavior: auto; }
+      .mobile-content.mobile-entering, .mobile-day-card.mobile-swipe-enter, .mobile-highlight { animation: none; }
+      .mobile-content.mobile-leaving { opacity: 1; transform: none; transition: none; }
+      .mobile-title-btn:active, .mobile-icon-btn:active, .mobile-bottom-btn:active { transform: none; }
+      .mobile-title-btn, .mobile-icon-btn, .mobile-bottom-btn { transition: none; }
+    }
   </style>
 </head>
 <body>
-  <header class="topbar">
+  <!-- Shared 24-unit optical grid for toolbar, calendar and row actions. -->
+  <svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute;overflow:hidden">
+    <symbol id="icon-back" viewBox="0 0 24 24"><path d="m14.5 5.5-6.5 6.5 6.5 6.5"/></symbol>
+    <symbol id="icon-forward" viewBox="0 0 24 24"><path d="m9.5 5.5 6.5 6.5-6.5 6.5"/></symbol>
+    <symbol id="icon-search" viewBox="0 0 24 24"><circle cx="10.6" cy="10.6" r="5.9"/><path d="m14.8 14.8 4.4 4.4"/></symbol>
+    <symbol id="icon-plus" viewBox="0 0 24 24"><path d="M12 5.5v13m-6.5-6.5h13"/></symbol>
+    <symbol id="icon-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.2"/><path d="M5.8 19c.5-3.5 2.9-5.4 6.2-5.4s5.7 1.9 6.2 5.4"/></symbol>
+    <symbol id="icon-check" viewBox="0 0 24 24"><path d="m5 12 4.4 4.4L19 7"/></symbol>
+    <symbol id="icon-close" viewBox="0 0 24 24"><path d="m6.5 6.5 11 11m0-11-11 11"/></symbol>
+    <symbol id="icon-undo" viewBox="0 0 24 24"><path d="m9.5 6-4.5 4.5 4.5 4.5M5 10.5h9.5a4 4 0 0 1 0 8H13"/></symbol>
+  </svg>
+  <header class="calendar-header">
+  <div class="topbar">
     <div class="topbar-left">
       <div class="brand">
         <h1>极简待办</h1>
       </div>
 
       <nav class="month-nav" aria-label="月份导航">
-        <button class="btn icon" id="prevMonthBtn" title="上个月">‹</button>
+        <button class="btn icon" id="prevMonthBtn" title="上个月" aria-label="上个月"><svg class="ui-icon" aria-hidden="true"><use href="#icon-back"/></svg></button>
         <div class="month-label" id="monthLabel">--</div>
-        <button class="btn icon" id="nextMonthBtn" title="下个月">›</button>
+        <button class="btn icon" id="nextMonthBtn" title="下个月" aria-label="下个月"><svg class="ui-icon" aria-hidden="true"><use href="#icon-forward"/></svg></button>
         <button class="btn" id="currentMonthBtn">当月</button>
         <button class="btn" id="todayBtn">今天</button>
       </nav>
@@ -2308,7 +2630,7 @@
     <div class="actions">
       <div class="desktop-search" id="desktopSearch">
         <button class="btn icon search-icon-btn" id="searchToggleBtn" type="button" title="搜索任务" aria-label="搜索任务">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.3"></circle><path d="m16 16 4 4"></path></svg>
+          <svg class="ui-icon" aria-hidden="true"><use href="#icon-search"/></svg>
         </button>
         <div class="desktop-search-panel">
           <input class="search" id="searchInput" type="search" placeholder="搜索当前分类任务" autocomplete="off" />
@@ -2319,7 +2641,7 @@
       <button class="btn primary" id="newTaskBtn">新任务</button>
       <input id="importFile" type="file" accept="application/json" hidden />
     </div>
-  </header>
+  </div>
 
   <div class="weekday" aria-hidden="true">
     <span>周一</span>
@@ -2330,6 +2652,7 @@
     <span>周六</span>
     <span>周日</span>
   </div>
+  </header>
 
   <main class="calendar" id="calendar">
     <div class="sentinel" id="topSentinel"></div>
@@ -2341,7 +2664,7 @@
     <div class="mobile-top">
       <div class="mobile-toolbar">
         <button class="mobile-title-btn" id="mobileTitleBtn" type="button" aria-label="切换到上级视图">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7"></path></svg>
+          <svg class="ui-icon" aria-hidden="true"><use href="#icon-back"/></svg>
           <span>6月</span>
         </button>
         <div class="mobile-actions">
@@ -2379,7 +2702,7 @@
         </div>
       </div>
       <div class="modal-grid">
-        <div id="taskTitle" class="paste-zone" contenteditable="true" data-placeholder="输入任务内容，或在这里按 Ctrl+V 粘贴图片/文字"></div>
+        <div id="taskTitle" class="paste-zone" contenteditable="true" data-placeholder="任务内容"></div>
         <div class="modal-row" id="taskMetaRow">
           <input id="taskDate" type="date" required />
           <select id="taskCategory"></select>
@@ -2456,7 +2779,6 @@
               </select>
             </div>
           </div>
-          <p class="setting-help">外观设置会即时影响日期框和事项条的视觉密度。</p>
         </div>
 
         <div class="settings-panel" data-settings-panel="calendar">
@@ -2521,7 +2843,6 @@
           </div>
           <input id="supabaseUrl" type="hidden" />
           <input id="supabaseAnonKey" type="hidden" />
-          <p class="setting-help" id="cloudHelp">导入导出可作为离线备份；清理已完成会删除所有已完成事项。</p>
         </div>
       </div>
       <div class="modal-actions">
@@ -2535,7 +2856,7 @@
     <form class="modal" id="authForm">
       <h2 id="authTitle">登录账号</h2>
       <div class="modal-grid">
-        <div class="auth-status" id="authStatusText" role="status" aria-live="polite">登录后会把任务、模板和设置同步到云端。</div>
+        <div class="auth-status" id="authStatusText" role="status" aria-live="polite"></div>
         <input id="authEmail" type="email" placeholder="邮箱" autocomplete="email" />
         <input id="authPassword" type="password" placeholder="密码，至少 6 位" autocomplete="current-password" />
         <input id="authPasswordConfirm" type="password" placeholder="再次输入新密码" autocomplete="new-password" aria-label="确认新密码" hidden />
@@ -2615,7 +2936,7 @@
           </div>
         </div>
         <textarea id="bulkText" placeholder="文本导入：每行一个任务，可写 2026-06-01 任务内容"></textarea>
-        <div class="bulk-preview" id="bulkPreview">填写后会在这里预览将创建的任务。</div>
+        <div class="bulk-preview" id="bulkPreview"></div>
       </div>
       <div class="modal-actions">
         <button class="btn" type="button" id="bulkCancelBtn">取消</button>
@@ -2636,7 +2957,7 @@
     </div>
   </div>
 
-  <div class="toast" id="toast"></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/chinese-days"></script>
   <script>
@@ -2899,7 +3220,6 @@
       templateSettingsList: document.getElementById("templateSettingsList"),
       supabaseUrl: document.getElementById("supabaseUrl"),
       supabaseAnonKey: document.getElementById("supabaseAnonKey"),
-      cloudHelp: document.getElementById("cloudHelp"),
       toast: document.getElementById("toast")
     };
 
@@ -3123,20 +3443,15 @@
       els.mobileTitleBtn.querySelector("span").textContent = label;
       els.mobileTitleBtn.disabled = mobileViewMode === "year";
       els.mobileShell.classList.toggle("mobile-year-mode", mobileViewMode === "year");
-      els.mobileSearchBtn.innerHTML = mobileIcon("search");
+      els.mobileSearchBtn.innerHTML = actionIcon("search");
       els.mobileSearchBtn.classList.toggle("active", mobileSearchOpen);
-      els.mobileAddBtn.innerHTML = mobileIcon("plus");
-      els.mobileMineBtn.innerHTML = mobileIcon("user");
+      els.mobileAddBtn.innerHTML = actionIcon("plus");
+      els.mobileMineBtn.innerHTML = actionIcon("user");
       els.mobileSearchPanel.classList.toggle("open", mobileSearchOpen);
     }
 
-    function mobileIcon(name) {
-      const icons = {
-        search: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.3"></circle><path d="m16 16 4 4"></path></svg>',
-        plus: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>',
-        user: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"></path><path d="M4 21a8 8 0 0 1 16 0"></path></svg>'
-      };
-      return icons[name] || icons.search;
+    function actionIcon(name) {
+      return `<svg class="ui-icon" aria-hidden="true" focusable="false"><use href="#icon-${name}"/></svg>`;
     }
 
     function renderMobileDateStrip(selected) {
@@ -3518,7 +3833,7 @@
     function renderMobileSearchResults() {
       const query = els.mobileSearchInput.value.trim().toLowerCase();
       if (!query) {
-        els.mobileSearchResults.innerHTML = '<div class="mobile-empty">输入关键词搜索任务</div>';
+        els.mobileSearchResults.replaceChildren();
         return;
       }
       const results = tasks
@@ -3771,13 +4086,13 @@
             ${today ? '<span class="today-pill">今天</span>' : ""}
           </div>
           <div class="day-actions">
-            <button class="day-action good ${dayState === "good" ? "active" : ""}" type="button" title="标记完成日" onclick="event.stopPropagation();setDayState('${key}','good')">✓</button>
-            <button class="day-action bad ${dayState === "bad" ? "active" : ""}" type="button" title="标记异常日" onclick="event.stopPropagation();setDayState('${key}','bad')">×</button>
-            <button class="add-day" type="button" title="添加日期备注" onclick="event.stopPropagation();openNoteModal('${key}')">+</button>
+            <button class="day-action good ${dayState === "good" ? "active" : ""}" type="button" title="标记完成日" onclick="event.stopPropagation();setDayState('${key}','good')">${actionIcon("check")}</button>
+            <button class="day-action bad ${dayState === "bad" ? "active" : ""}" type="button" title="标记异常日" onclick="event.stopPropagation();setDayState('${key}','bad')">${actionIcon("close")}</button>
+            <button class="add-day" type="button" title="添加日期备注" onclick="event.stopPropagation();openNoteModal('${key}')">${actionIcon("plus")}</button>
           </div>
         </div>
         <div class="task-list" data-date="${key}">
-          ${dayTasks.length ? dayTasks.map(renderTask).join("") : '<div class="empty-hint">双击添加任务，点 + 添加备注</div>'}
+          ${dayTasks.map(renderTask).join("")}
         </div>
         ${renderDayNotes(key, notes)}
       </article>`;
@@ -3804,8 +4119,8 @@
           ${showNote ? `<span class="note">${escapeHtml(task.note)}</span>` : ""}
         </div>
         <div class="task-actions">
-          <button class="mini-btn good" type="button" title="${task.done ? "取消完成" : "完成"}" onclick="event.stopPropagation();toggleTask('${task.id}')">${task.done ? "↩" : "✓"}</button>
-          <button class="mini-btn bad" type="button" title="删除" onclick="event.stopPropagation();deleteTask('${task.id}')">×</button>
+          <button class="mini-btn good" type="button" title="${task.done ? "取消完成" : "完成"}" onclick="event.stopPropagation();toggleTask('${task.id}')">${actionIcon(task.done ? "undo" : "check")}</button>
+          <button class="mini-btn bad" type="button" title="删除" onclick="event.stopPropagation();deleteTask('${task.id}')">${actionIcon("close")}</button>
         </div>
       </div>`;
     }
@@ -3839,8 +4154,8 @@
       return `<div class="day-note ${note.done ? "done" : ""}" data-note-id="${note.id}" data-note-date="${note.date}" ondblclick="event.stopPropagation();openNoteModal('${note.date}','${note.id}')">
         <p class="day-note-title">${escapeHtml(note.text)}</p>
         <div class="day-note-actions">
-          <button class="mini-btn good" type="button" title="${note.done ? "取消完成" : "完成"}" onclick="event.stopPropagation();toggleDayNote('${note.id}')">${note.done ? "↩" : "✓"}</button>
-          <button class="mini-btn bad" type="button" title="删除" onclick="event.stopPropagation();deleteDayNote('${note.id}')">×</button>
+          <button class="mini-btn good" type="button" title="${note.done ? "取消完成" : "完成"}" onclick="event.stopPropagation();toggleDayNote('${note.id}')">${actionIcon(note.done ? "undo" : "check")}</button>
+          <button class="mini-btn bad" type="button" title="删除" onclick="event.stopPropagation();deleteDayNote('${note.id}')">${actionIcon("close")}</button>
         </div>
       </div>`;
     }
@@ -3871,7 +4186,9 @@
     function updateCategoryToggle() {
       if (!els.categoryToggle) return;
       els.categoryToggle.querySelectorAll("[data-category-view]").forEach(button => {
-        button.classList.toggle("active", button.dataset.categoryView === activeCategory);
+        const selected = button.dataset.categoryView === activeCategory;
+        button.classList.toggle("active", selected);
+        button.setAttribute("aria-pressed", String(selected));
       });
     }
 
@@ -4669,7 +4986,7 @@
     }
 
     function openSettings() {
-      els.dayHeightRange.value = settings.dayMinHeight;
+      updateDayHeightRange(settings.dayMinHeight);
       els.dayHeightInput.value = settings.dayMinHeight;
       els.taskDensity.value = settings.taskDensity;
       els.taskDisplay.value = settings.taskDisplay;
@@ -4758,11 +5075,11 @@
         els.authStatusText.textContent = `当前账号：${currentUser.email || currentUser.id}。当前状态：${statusText}${lastCloudSyncAt ? `，最近同步 ${new Date(lastCloudSyncAt).toLocaleTimeString()}` : ""}。`;
       } else {
         els.authStatusText.textContent = {
-          signup: "内测期间需凭内测码注册，未注册也可本地使用。注册后请在邮箱里完成确认。",
-          otp: "输入已注册邮箱，发送验证码后填写邮件中的验证码。",
-          recover: "向你的邮箱发送重置链接，验证邮箱后即可设置新密码。",
-          reset: "邮箱已验证，请设置新密码。原有任务和数据不会被删除。",
-          login: "登录后会把任务、模板和设置同步到云端。"
+          signup: "",
+          otp: "",
+          recover: "",
+          reset: "邮箱已验证",
+          login: ""
         }[authMode];
       }
       if (authFeedback) els.authStatusText.textContent = authFeedback;
@@ -4919,9 +5236,17 @@
       document.querySelectorAll("[data-settings-panel]").forEach(panel => panel.classList.toggle("active", panel.dataset.settingsPanel === tab));
     }
 
+    function updateDayHeightRange(value) {
+      const range = els.dayHeightRange;
+      range.value = value;
+      const min = Number(range.min);
+      const max = Number(range.max);
+      range.style.setProperty("--range-fill", `${(Number(range.value) - min) / (max - min) * 100}%`);
+    }
+
     function syncDayHeight(value) {
       const next = clamp(Number(value) || DEFAULT_SETTINGS.dayMinHeight, 300, 600);
-      els.dayHeightRange.value = next;
+      updateDayHeightRange(next);
       els.dayHeightInput.value = next;
       document.documentElement.style.setProperty("--day-min-h", `${next}px`);
     }
@@ -4975,7 +5300,9 @@
         const newTask = { ...payload, id: createId(), done: false, createdAt: Date.now(), sortIndex: nextSortIndex(payload.date) };
         tasks.push(newTask);
         if (els.saveTemplateCheck.checked) saveTemplate(payload);
-        showToast("已添加");
+        const categoryName = getCategory(payload.category).name;
+        const hiddenByCategory = !isMobileViewport() && payload.category !== activeCategory;
+        showToast(hiddenByCategory ? `已添加到「${categoryName}」，切换分类即可查看` : "已添加", hiddenByCategory ? 3200 : 1600);
       }
       persist();
       closeModal();
@@ -5230,7 +5557,7 @@
 
     function renderTemplateStrip(dateKey) {
       if (!taskTemplates.length) {
-        els.templateStrip.innerHTML = '<span class="setting-help">暂无模板，勾选“保存为模板”后会出现在这里。</span>';
+        els.templateStrip.replaceChildren();
         return;
       }
       els.templateStrip.innerHTML = taskTemplates.slice(0, 10).map(t => `
@@ -5262,7 +5589,7 @@
         return `<div class="special-item">
           <span class="special-dot" style="--special-color:${cat.color}"></span>
           <span>${escapeHtml(t.title)} · ${escapeHtml(cat.name)}${priorityText}${progress ? ` · ${progress}%` : ""}</span>
-          <button class="mini-btn bad" type="button" onclick="deleteTemplate('${t.id}')">×</button>
+          <button class="mini-btn bad" type="button" aria-label="删除模板" title="删除模板" onclick="deleteTemplate('${t.id}')">${actionIcon("close")}</button>
         </div>`;
       }).join("")}</div>`;
     }
@@ -5285,7 +5612,7 @@
       els.bulkEnd.value = d;
       els.bulkMonthDay.value = "";
       els.bulkText.value = "";
-      els.bulkPreview.textContent = "填写后会在这里预览将创建的任务。";
+      els.bulkPreview.textContent = "";
       lastBulkItems = [];
       showBackdrop(els.bulkBackdrop);
     }
@@ -5989,9 +6316,6 @@
       if (els.authStatusText) {
         updateAuthModeUi();
       }
-      if (els.cloudHelp) {
-        els.cloudHelp.textContent = "导入导出可作为离线备份；清理已完成会删除所有已完成事项。账号与同步请使用右上角入口。";
-      }
     }
 
     function setCloudStatus(status) {
@@ -6580,11 +6904,11 @@
       return escapeHtml(value).replace(/`/g, "&#096;");
     }
 
-    function showToast(message) {
+    function showToast(message, duration = 1600) {
       els.toast.textContent = message;
       els.toast.classList.add("show");
       clearTimeout(showToast.timer);
-      showToast.timer = setTimeout(() => els.toast.classList.remove("show"), 1600);
+      showToast.timer = setTimeout(() => els.toast.classList.remove("show"), duration);
     }
 
     function throttle(fn, wait) {
