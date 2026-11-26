@@ -920,7 +920,6 @@
     }
 
     .task.has-image .task-actions {
-      opacity: 1;
       justify-content: flex-start;
     }
 
@@ -1038,14 +1037,17 @@
       display: flex;
       justify-content: flex-end;
       gap: 4px;
-      opacity: .18;
-      transition: opacity .15s ease;
     }
 
-    .task:hover .task-actions,
-    .task:focus-within .task-actions {
-      opacity: 1;
+    .task-actions .mini-btn:active { background: var(--primary-soft); }
+    @media (max-width: 720px) {
+      .task-actions .mini-btn { width: 44px; height: 44px; }
     }
+    @media (721px <= width <= 1100px), (max-width: 360px) {
+      .task { grid-template-columns: minmax(0, 1fr); }
+    }
+    .task-actions .good[aria-pressed="true"] { color: var(--green); }
+    .task.priority-urgent .task-actions .good[aria-pressed="true"] { color: inherit; }
 
     .mini-btn {
       width: 24px;
@@ -1939,10 +1941,19 @@
     }
 
     .mobile-date-strip {
-      margin: 10px -2px 0;
-      padding: 0 2px 4px;
+      margin-top: var(--space-2);
+      padding: var(--space-2);
+      border-radius: 18px;
+      pointer-events: auto;
+    }
+
+    .mobile-date-strip:empty { display: none; }
+
+    .mobile-date-track {
+      --date-gap: var(--space-1);
+      --visible-dates: 7;
       display: flex;
-      gap: 8px;
+      gap: var(--date-gap);
       overflow-x: auto;
       overscroll-behavior-x: contain;
       scroll-snap-type: x proximity;
@@ -1950,12 +1961,16 @@
       pointer-events: auto;
     }
 
-    .mobile-date-strip::-webkit-scrollbar {
-      display: none;
+    .mobile-date-track::-webkit-scrollbar { display: none; }
+
+    @media (max-width: 380px) {
+      .mobile-date-track { --visible-dates: 5; }
     }
 
     .mobile-date-btn {
-      flex: 0 0 54px;
+      flex: 0 0 calc((100% - (var(--visible-dates) - 1) * var(--date-gap)) / var(--visible-dates));
+      min-width: 0;
+      padding-inline: 0;
       min-height: 62px;
       border: 0;
       border-radius: 16px;
@@ -2262,7 +2277,6 @@
       .settings-two { grid-template-columns: 1fr; }
       .special-editor { grid-template-columns: 1fr 1fr; }
       .bulk-row { grid-template-columns: 1fr; }
-      .task-actions { opacity: 1; }
     }
     /* Visual system: opaque content, translucent navigation only. */
     :root {
@@ -2294,14 +2308,14 @@
     }
     .topbar, .mobile-top { background: transparent; border-color: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; }
     .month-nav, .category-toggle, .topbar .actions, .mobile-toolbar,
-    .mobile-date-strip:not(:empty), .mobile-bottom-inner, .desktop-search-panel, .modal {
+    .mobile-date-strip:not(:empty), .mobile-bottom-btn, .desktop-search-panel, .modal {
       background: var(--nav-surface);
       border: 0;
       box-shadow: var(--glass-edge);
     }
     @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
       .month-nav, .category-toggle, .topbar .actions, .mobile-toolbar,
-      .mobile-date-strip:not(:empty), .mobile-bottom-inner, .desktop-search-panel, .modal {
+      .mobile-date-strip:not(:empty), .mobile-bottom-btn, .desktop-search-panel, .modal {
         background: var(--glass-fill);
         -webkit-backdrop-filter: blur(19px) saturate(1.48);
         backdrop-filter: blur(19px) saturate(1.48);
@@ -2370,36 +2384,44 @@
     }
 
     @media (max-width: 720px) {
-      .mobile-top { padding-bottom: 8px; }
+      .mobile-shell { --mobile-edge: var(--space-4); }
+      .mobile-top, .mobile-content, .mobile-bottom {
+        padding-left: calc(var(--mobile-edge) + env(safe-area-inset-left, 0px));
+        padding-right: calc(var(--mobile-edge) + env(safe-area-inset-right, 0px));
+      }
+      .mobile-top { padding-bottom: var(--space-2); }
+      .mobile-content { padding-top: calc(154px + max(12px, env(safe-area-inset-top))); }
       .toast { bottom: calc(82px + env(safe-area-inset-bottom)); }
-      .mobile-title-btn, .mobile-actions, .mobile-bottom-btn { box-shadow: none; }
+      .mobile-title-btn, .mobile-actions { box-shadow: none; }
       .mobile-toolbar { border-radius: var(--control-radius); padding: 2px 4px 2px 10px; }
       .mobile-title-btn, .mobile-actions { background: transparent; }
       .mobile-title-btn { padding-inline: 0 12px; }
       .mobile-actions { padding: 0; gap: 3px; }
-      .mobile-date-strip { margin-top: 8px; border-radius: 18px; }
+      .mobile-date-btn, .mobile-bottom-btn { touch-action: manipulation; }
       .mobile-date-btn:not(.active) { background: transparent; }
       .mobile-date-btn:focus-visible { outline-offset: -2px; }
       .mobile-content { background: transparent; }
       .mobile-day-card, .mobile-month-block, .mobile-year-section { background: var(--panel); border-color: transparent; box-shadow: 0 6px 26px rgba(26,55,98,.06); }
       .mobile-day-title strong { font-size: 22px; font-weight: 720; }
-      .mobile-bottom { background: none; }
-      .mobile-bottom-inner {
-        width: max-content;
-        max-width: 100%;
-        gap: 4px;
-        margin-inline: auto;
-        padding: 4px;
-        border-radius: var(--control-radius);
+      .mobile-bottom {
+        padding-bottom: calc(var(--mobile-edge) + env(safe-area-inset-bottom, 0px));
+        background: none;
       }
-      .mobile-bottom-btn { background: transparent; font-size: 16px; }
+      .mobile-bottom-inner { pointer-events: none; }
+      .mobile-bottom-btn {
+        pointer-events: auto;
+        background: var(--nav-surface);
+        box-shadow: var(--glass-edge);
+        font-size: 16px;
+      }
+      .mobile-bottom-btn:active { background: var(--primary-soft); }
       .modal { border-radius: var(--sheet-radius) var(--sheet-radius) 0 0; }
       .modal-actions { background: var(--panel); }
     }
 
     @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
       .month-nav, .category-toggle, .topbar .actions, .mobile-toolbar,
-      .mobile-date-strip:not(:empty), .mobile-bottom-inner, .desktop-search-panel, .modal {
+      .mobile-date-strip:not(:empty), .mobile-bottom-btn, .desktop-search-panel, .modal {
         background: var(--nav-surface);
         -webkit-backdrop-filter: none;
         backdrop-filter: none;
@@ -2513,7 +2535,7 @@
     .settings-tabs { margin-bottom: var(--space-4); }
     .settings-panel :is(.setting-field, .setting-row) { margin: 0; }
     #taskForm :is(#taskDate, #taskCategory, #taskProgress, #taskNote) {
-      background: rgb(222 232 247 / .44);
+      background-color: rgb(222 232 247 / .44);
       border-color: transparent;
       box-shadow: inset 0 1px 3px rgb(41 61 95 / .07);
     }
@@ -2563,7 +2585,7 @@
         -webkit-backdrop-filter: blur(9px) saturate(1.38) brightness(1.05);
         backdrop-filter: blur(9px) saturate(1.38) brightness(1.05);
       }
-      .mobile-toolbar, .mobile-date-strip:not(:empty), .mobile-bottom-inner {
+      .mobile-toolbar, .mobile-date-strip:not(:empty), .mobile-bottom-btn {
         -webkit-backdrop-filter: blur(9px) saturate(1.38) brightness(1.05);
         backdrop-filter: blur(9px) saturate(1.38) brightness(1.05);
       }
@@ -2574,14 +2596,33 @@
       .settings-grid { min-height: 0; }
     }
     @media (prefers-reduced-transparency: reduce), (prefers-contrast: more), (forced-colors: active) {
-      .calendar-header, .mobile-toolbar, .mobile-date-strip:not(:empty), .mobile-bottom-inner, .modal {
+      .calendar-header, .mobile-toolbar, .mobile-date-strip:not(:empty), .mobile-bottom-btn, .modal {
         background: var(--nav-surface);
         -webkit-backdrop-filter: none;
         backdrop-filter: none;
       }
-      #taskForm :is(#taskDate, #taskCategory, #taskProgress, #taskNote) { background: var(--panel); border-color: var(--muted); }
+      #taskForm :is(#taskDate, #taskCategory, #taskProgress, #taskNote) { background-color: var(--panel); border-color: var(--muted); }
     }
-    @media (forced-colors: active) { .category-toggle-btn.active { outline: 2px solid Highlight; } }
+    /* Keep native menus and keyboard behavior; only align the closed select's chevron. */
+    select:not([multiple]):is(:not([size]), [size="1"]) {
+      --select-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='m3.5 6 4.5 4.5L12.5 6' fill='none' stroke='%23475569' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      -webkit-appearance: none;
+      appearance: none;
+      padding-inline: 12px 36px;
+      background-image: var(--select-chevron);
+      background-size: 14px 14px;
+      background-position: right 12px center;
+      background-repeat: no-repeat;
+    }
+    select:not([multiple]):is(:not([size]), [size="1"]):dir(rtl) { background-position: left 12px center; }
+    @media (forced-colors: active) {
+      .category-toggle-btn.active { outline: 2px solid Highlight; }
+      select:not([multiple]):is(:not([size]), [size="1"]) {
+        appearance: auto;
+        background-image: none;
+        padding-inline-end: 12px;
+      }
+    }
     @media (prefers-reduced-motion: reduce) {
       .category-toggle::before, .category-toggle-btn, :is(#settingsTabs, #taskPriorityOptions)::before { transition: none; }
       html { scroll-behavior: auto; }
@@ -2602,6 +2643,7 @@
     <symbol id="icon-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.2"/><path d="M5.8 19c.5-3.5 2.9-5.4 6.2-5.4s5.7 1.9 6.2 5.4"/></symbol>
     <symbol id="icon-check" viewBox="0 0 24 24"><path d="m5 12 4.4 4.4L19 7"/></symbol>
     <symbol id="icon-close" viewBox="0 0 24 24"><path d="m6.5 6.5 11 11m0-11-11 11"/></symbol>
+    <symbol id="icon-edit" viewBox="0 0 24 24"><path d="m14.5 6.5 3 3M5 19l4.5-1 10-10a2.1 2.1 0 0 0-3-3l-10 10L5 19Z"/></symbol>
     <symbol id="icon-undo" viewBox="0 0 24 24"><path d="m9.5 6-4.5 4.5 4.5 4.5M5 10.5h9.5a4 4 0 0 1 0 8H13"/></symbol>
   </svg>
   <header class="calendar-header">
@@ -2681,14 +2723,14 @@
     <div class="mobile-content" id="mobileContent"></div>
     <div class="mobile-bottom">
       <div class="mobile-bottom-inner">
-        <button class="mobile-bottom-btn" id="mobileTodayBtn" type="button">今天</button>
         <button class="mobile-bottom-btn icon" id="mobileMineBtn" type="button" title="我的" aria-label="我的"></button>
+        <button class="mobile-bottom-btn" id="mobileTodayBtn" type="button">今天</button>
       </div>
     </div>
   </section>
 
   <div class="modal-backdrop" id="modalBackdrop">
-    <form class="modal" id="taskForm">
+    <form class="modal" id="taskForm" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
       <div class="modal-heading">
         <h2 id="modalTitle">新任务</h2>
         <div class="task-priority-wrap" id="taskPriorityWrap">
@@ -2702,7 +2744,7 @@
         </div>
       </div>
       <div class="modal-grid">
-        <div id="taskTitle" class="paste-zone" contenteditable="true" data-placeholder="任务内容"></div>
+        <div id="taskTitle" class="paste-zone" contenteditable="true" tabindex="0" role="textbox" aria-label="任务内容" aria-multiline="true" data-placeholder="任务内容"></div>
         <div class="modal-row" id="taskMetaRow">
           <input id="taskDate" type="date" required />
           <select id="taskCategory"></select>
@@ -3071,6 +3113,9 @@
     let firstMonday = null;
     let lastSunday = null;
     let editingId = null;
+    const backdropCloseTimers = new WeakMap();
+    let editorTrigger = null;
+    let confirmTrigger = null;
     let loadingMore = false;
     let activeDrag = null;
     let suppressNextClick = false;
@@ -3119,6 +3164,7 @@
     let resetMobileContentScrollOnRender = false;
     let pendingMobileHighlightId = null;
     let mobileSortDrag = null;
+    let blockMobileTaskClick = false;
     let mobileSwipe = null;
     let mobileSwipeAnimating = false;
 
@@ -3268,10 +3314,10 @@
       document.getElementById("nextMonthBtn").addEventListener("click", () => jumpMonth(1));
       document.getElementById("currentMonthBtn").addEventListener("click", goCurrentMonth);
       document.getElementById("todayBtn").addEventListener("click", goToday);
-      document.getElementById("newTaskBtn").addEventListener("click", () => openModal(toKey(new Date())));
+      document.getElementById("newTaskBtn").addEventListener("click", event => openModal(toKey(new Date()), null, event.currentTarget));
       els.mobileTitleBtn.addEventListener("click", handleMobileTitleClick);
       els.mobileSearchBtn.addEventListener("click", toggleMobileSearch);
-      els.mobileAddBtn.addEventListener("click", () => openModal(mobileSelectedDate));
+      els.mobileAddBtn.addEventListener("click", event => openModal(mobileSelectedDate, null, event.currentTarget));
       els.mobileMineBtn.addEventListener("click", openAuth);
       els.mobileTodayBtn.addEventListener("click", goMobileToday);
       els.mobileSearchInput.addEventListener("input", renderMobileSearchResults);
@@ -3282,6 +3328,7 @@
       els.mobileContent.addEventListener("pointerup", handleMobileSwipeEnd);
       els.mobileContent.addEventListener("pointercancel", cancelMobileSwipe);
       els.mobileContent.addEventListener("pointerdown", handleMobileSortPointerDown);
+      els.mobileContent.addEventListener("click", handleMobileTaskClick);
       document.getElementById("settingsBtn").addEventListener("click", openSettings);
       els.accountStatus.addEventListener("click", openAuth);
       document.getElementById("cancelBtn").addEventListener("click", closeModal);
@@ -3297,7 +3344,6 @@
       els.taskForm.addEventListener("submit", saveModalTask);
       els.taskForm.addEventListener("paste", handleTaskPaste);
       els.taskDate.addEventListener("click", showTaskDatePicker);
-      els.taskDate.addEventListener("focus", showTaskDatePicker);
       els.taskPriorityOptions.addEventListener("click", event => {
         const button = event.target.closest("[data-priority]");
         if (button) setTaskPriority(button.dataset.priority);
@@ -3343,6 +3389,18 @@
         toggleDesktopSearch();
       });
       document.addEventListener("keydown", event => {
+        if (event.defaultPrevented || event.isComposing) return;
+        const dialog = [els.confirmBackdrop, els.bulkBackdrop, els.authBackdrop, els.settingsBackdrop, els.modalBackdrop]
+          .find(el => el.classList.contains("show") && !el.classList.contains("closing"));
+        if (dialog === els.modalBackdrop || dialog === els.confirmBackdrop) {
+          if (event.key === "Escape") {
+            event.preventDefault();
+            if (dialog === els.modalBackdrop) closeModal();
+            else closeConfirm();
+            return;
+          }
+          if (event.key === "Tab") keepDialogFocus(event, dialog);
+        }
         if (event.key === "Escape") {
           closeDesktopSearch();
           closeModal();
@@ -3461,7 +3519,7 @@
         date.setDate(date.getDate() + offset);
         dates.push(date);
       }
-      return dates.map(date => {
+      return `<div class="mobile-date-track">${dates.map(date => {
         const key = toKey(date);
         const lunar = getLunarInfo(date)?.display || "";
         const dow = ["日","一","二","三","四","五","六"][date.getDay()];
@@ -3470,13 +3528,17 @@
           <span class="num">${date.getDate()}</span>
           <span class="lunar">${escapeHtml(lunar)}</span>
         </button>`;
-      }).join("");
+      }).join("")}</div>`;
     }
 
     function focusMobileDateStrip() {
-      if (!els.mobileDateStrip || mobileViewMode !== "day") return;
-      const active = els.mobileDateStrip.querySelector(".mobile-date-btn.active");
-      if (active) active.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });
+      const track = els.mobileDateStrip.querySelector(".mobile-date-track");
+      if (!track || !isMobileViewport()) return;
+      const active = track.querySelector(".mobile-date-btn.active");
+      if (active) {
+        const center = (rect) => rect.left + rect.width / 2;
+        track.scrollLeft += center(active.getBoundingClientRect()) - center(track.getBoundingClientRect());
+      }
     }
 
     function renderMobileDayCard(dateKey) {
@@ -3492,7 +3554,7 @@
           <span>${escapeHtml(lunar)}</span>
         </div>
         <div class="task-list" data-date="${dateKey}">
-          ${tasksForDay.map(renderTask).join("")}
+          ${tasksForDay.map(task => renderTask(task, true)).join("")}
           ${empty}
         </div>
         ${renderDayNotes(dateKey, notesForDay)}
@@ -3727,13 +3789,12 @@
       if (event.target.closest("button, input, select, textarea, [contenteditable='true']")) return;
       const card = getMobileDayCard();
       if (!card) return;
+      blockMobileTaskClick = false;
       resetMobileSwipeCard(card);
       mobileSwipe = {
         pointerId: event.pointerId,
         startX: event.clientX,
         startY: event.clientY,
-        lastX: event.clientX,
-        lastY: event.clientY,
         card,
         cancelled: false,
         locked: false
@@ -3742,8 +3803,6 @@
 
     function handleMobileSwipeMove(event) {
       if (!mobileSwipe || mobileSwipe.pointerId !== event.pointerId || mobileSwipe.cancelled || mobileSortDrag) return;
-      mobileSwipe.lastX = event.clientX;
-      mobileSwipe.lastY = event.clientY;
       const dx = event.clientX - mobileSwipe.startX;
       const dy = event.clientY - mobileSwipe.startY;
       if (!mobileSwipe.locked && Math.abs(dx) > 18 && Math.abs(dx) > Math.abs(dy) * 1.35) {
@@ -3768,8 +3827,9 @@
         resetMobileSwipeCard(swipe.card);
         return;
       }
-      const dx = (event.clientX || swipe.lastX) - swipe.startX;
-      const dy = (event.clientY || swipe.lastY) - swipe.startY;
+      const dx = event.clientX - swipe.startX;
+      const dy = event.clientY - swipe.startY;
+      blockMobileTaskClick = swipe.locked || Math.hypot(dx, dy) > 18;
       if (Math.abs(dx) >= 60 && Math.abs(dx) > Math.abs(dy) * 1.35) {
         shiftMobileDay(dx < 0 ? 1 : -1, true);
         return;
@@ -3877,6 +3937,14 @@
       return dayNotes.filter(note => note.date === dateKey).sort(noteOrder);
     }
 
+    function handleMobileTaskClick(event) {
+      if (!isMobileViewport() || mobileViewMode !== "day" || mobileSwipeAnimating || mobileSortDrag || blockMobileTaskClick) return;
+      if (event.target.closest("button, input, select, textarea")) return;
+      const task = event.target.closest(".mobile-day-card .task");
+      if (!task || els.modalBackdrop.matches(".show:not(.closing)")) return;
+      openModal(task.dataset.taskDate, task.dataset.taskId, task.querySelector('[data-task-action="edit"]'));
+    }
+
     function handleMobileSortPointerDown(event) {
       if (!isMobileViewport() || mobileViewMode !== "day" || event.button !== 0) return;
       if (mobileSwipe?.locked) return;
@@ -3898,6 +3966,7 @@
       const timer = setTimeout(() => {
         if (!armed) return;
         cleanup();
+        blockMobileTaskClick = true;
         cancelMobileSwipe();
         beginMobileSortDrag(task, taskId, dateKey, startX, startY, event.pointerId);
       }, 420);
@@ -4092,12 +4161,12 @@
           </div>
         </div>
         <div class="task-list" data-date="${key}">
-          ${dayTasks.map(renderTask).join("")}
+          ${dayTasks.map(task => renderTask(task)).join("")}
         </div>
         ${renderDayNotes(key, notes)}
       </article>`;
     }
-    function renderTask(task) {
+    function renderTask(task, mobile = false) {
       const cat = getCategory(normalizeCategoryId(task.category));
       const showNote = settings.taskDisplay === "note" && task.note;
       const blocks = getTaskBlocks(task);
@@ -4107,7 +4176,7 @@
       const priority = normalizePriority(task.priority);
       const priorityClass = priority === "normal" ? "" : `priority-${priority}`;
       const priorityLabel = priority === "normal" ? "" : PRIORITIES[priority].name;
-      return `<div class="task ${task.done ? "done" : ""} ${hasImage ? "has-image" : ""} ${priorityClass}" draggable="false" data-task-id="${task.id}" data-task-date="${task.date}" style="--cat-color:${cat.color};--cat-bg:${cat.bg}" ondblclick="event.stopPropagation();openModal('${task.date}','${task.id}')">
+      return `<div class="task ${task.done ? "done" : ""} ${hasImage ? "has-image" : ""} ${priorityClass}" draggable="false" data-task-id="${escapeAttr(task.id)}" data-task-date="${task.date}" style="--cat-color:${cat.color};--cat-bg:${cat.bg}"${mobile ? "" : ' ondblclick="event.stopPropagation();openModal(this.dataset.taskDate,this.dataset.taskId)"'}>
         <div class="task-main">
           ${visibleBlocks.length ? `<div class="task-content">${visibleBlocks.map(renderTaskBlock).join("")}</div>` : ""}
           <div class="task-title-wrap">
@@ -4118,9 +4187,10 @@
           ${progress ? `<span class="progress-tag">进度 ${progress}%</span>` : ""}
           ${showNote ? `<span class="note">${escapeHtml(task.note)}</span>` : ""}
         </div>
-        <div class="task-actions">
-          <button class="mini-btn good" type="button" title="${task.done ? "取消完成" : "完成"}" onclick="event.stopPropagation();toggleTask('${task.id}')">${actionIcon(task.done ? "undo" : "check")}</button>
-          <button class="mini-btn bad" type="button" title="删除" onclick="event.stopPropagation();deleteTask('${task.id}')">${actionIcon("close")}</button>
+        <div class="task-actions" role="group" aria-label="${escapeAttr(task.title)}" ondblclick="event.stopPropagation()">
+          <button class="mini-btn good" data-task-action="toggle" type="button" aria-label="完成任务" aria-pressed="${task.done}" title="${task.done ? "取消完成" : "完成"}" onclick="event.stopPropagation();toggleTask(this.closest('.task').dataset.taskId, this)">${actionIcon(task.done ? "undo" : "check")}</button>
+          <button class="mini-btn" data-task-action="edit" type="button" aria-label="编辑任务" title="编辑" onclick="event.stopPropagation();openModal(this.closest('.task').dataset.taskDate,this.closest('.task').dataset.taskId,this)">${actionIcon("edit")}</button>
+          <button class="mini-btn bad" data-task-action="delete" type="button" aria-label="删除任务" title="删除" onclick="event.stopPropagation();deleteTask(this.closest('.task').dataset.taskId, this)">${actionIcon("close")}</button>
         </div>
       </div>`;
     }
@@ -4907,7 +4977,32 @@
       localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
     }
 
-    function openModal(dateKey, id) {
+    function keepDialogFocus(event, backdrop) {
+      const controls = [...backdrop.querySelectorAll('button, input, select, textarea, [contenteditable="true"]')]
+        .filter(control => !control.disabled && control.tabIndex >= 0 && control.getClientRects().length);
+      if (!controls.length) return;
+      const first = controls[0];
+      const last = controls.at(-1);
+      const active = document.activeElement;
+      if (!backdrop.contains(active) || active === (event.shiftKey ? first : last)) {
+        event.preventDefault();
+        (event.shiftKey ? last : first).focus();
+      }
+    }
+
+    function visibleTaskControl(id, action) {
+      const surface = isMobileViewport() ? els.mobileContent : els.weeks;
+      return [...surface.querySelectorAll(`.task[data-task-id="${CSS.escape(id)}"] [data-task-action="${action}"]`)]
+        .find(control => control.getClientRects().length);
+    }
+
+    function focusTaskControl(id, action) {
+      const fallback = isMobileViewport() ? els.mobileAddBtn : document.getElementById("newTaskBtn");
+      (id && visibleTaskControl(id, action) || fallback).focus();
+    }
+
+    function openModal(dateKey, id, trigger) {
+      editorTrigger = trigger || (id ? visibleTaskControl(id, "edit") : document.activeElement);
       setModalMode("task");
       editingId = id || null;
       editingNoteId = null;
@@ -4924,10 +5019,11 @@
       els.saveTemplateCheck.checked = false;
       renderTemplateStrip(els.taskDate.value);
       showBackdrop(els.modalBackdrop);
-      setTimeout(() => els.taskTitle.focus(), 0);
+      els.taskTitle.focus();
     }
 
     function openNoteModal(dateKey, id) {
+      editorTrigger = document.activeElement;
       setModalMode("note");
       editingId = null;
       editingNoteId = id || null;
@@ -4942,7 +5038,7 @@
       renderContentBlocks();
       els.saveTemplateCheck.checked = false;
       showBackdrop(els.modalBackdrop);
-      setTimeout(() => els.taskTitle.focus(), 0);
+      els.taskTitle.focus();
     }
 
     function setModalMode(mode) {
@@ -4959,8 +5055,12 @@
       document.getElementById("openBulkBtn")?.classList.toggle("hidden", noteMode);
     }
 
-    function closeModal() {
+    function closeModal(restoreFocus = true) {
+      if (!els.modalBackdrop.classList.contains("show")) return;
+      const trigger = editorTrigger;
+      editorTrigger = null;
       hideBackdrop(els.modalBackdrop);
+      if (restoreFocus !== false && trigger?.isConnected) trigger.focus();
       editingId = null;
       editingNoteId = null;
       modalMode = "task";
@@ -5193,35 +5293,41 @@
     }
 
     function showBackdrop(el) {
+      clearTimeout(backdropCloseTimers.get(el));
+      el.inert = false;
       el.classList.remove("closing");
       el.classList.add("show");
     }
 
     function hideBackdrop(el) {
-      if (!el.classList.contains("show")) return;
+      if (!el.classList.contains("show") || el.classList.contains("closing")) return;
+      el.inert = true;
       el.classList.add("closing");
-      setTimeout(() => el.classList.remove("show", "closing"), 190);
+      backdropCloseTimers.set(el, setTimeout(() => el.classList.remove("show", "closing"), 190));
     }
 
-    function openConfirmDialog({ title = "确认操作", message = "", confirmText = "确认", danger = false, onConfirm }) {
+    function openConfirmDialog({ title = "确认操作", message = "", confirmText = "确认", danger = false, trigger = document.activeElement, onConfirm }) {
+      confirmTrigger = trigger;
       pendingConfirmAction = typeof onConfirm === "function" ? onConfirm : null;
       els.confirmTitle.textContent = title;
       els.confirmMessage.textContent = message;
       els.confirmOkBtn.textContent = confirmText;
       els.confirmOkBtn.classList.toggle("danger", Boolean(danger));
       showBackdrop(els.confirmBackdrop);
-      setTimeout(() => els.confirmCancelBtn.focus(), 0);
+      els.confirmCancelBtn.focus();
     }
 
     function closeConfirm() {
+      const trigger = confirmTrigger;
+      confirmTrigger = null;
       pendingConfirmAction = null;
       hideBackdrop(els.confirmBackdrop);
+      if (trigger?.isConnected) trigger.focus();
     }
 
     function confirmPendingAction() {
       const action = pendingConfirmAction;
-      pendingConfirmAction = null;
-      hideBackdrop(els.confirmBackdrop);
+      closeConfirm();
       if (action) action();
     }
 
@@ -5293,8 +5399,9 @@
       };
       if (!payload.title && payload.contentBlocks.length) payload.title = deriveFullTitleFromBlocks(payload.contentBlocks);
       if (!payload.title) return showToast("请输入任务标题或粘贴内容");
-      if (editingId) {
-        tasks = tasks.map(task => task.id === editingId ? { ...task, ...payload } : task);
+      const editedTaskId = editingId;
+      if (editedTaskId) {
+        tasks = tasks.map(task => task.id === editedTaskId ? { ...task, ...payload } : task);
         showToast("已保存");
       } else {
         const newTask = { ...payload, id: createId(), done: false, createdAt: Date.now(), sortIndex: nextSortIndex(payload.date) };
@@ -5305,9 +5412,11 @@
         showToast(hiddenByCategory ? `已添加到「${categoryName}」，切换分类即可查看` : "已添加", hiddenByCategory ? 3200 : 1600);
       }
       persist();
-      closeModal();
+      closeModal(!editedTaskId);
       renderVisibleWeeks();
       ensureDateRendered(parseKey(payload.date));
+      if (editedTaskId) focusTaskControl(editedTaskId, "edit");
+      else if (document.activeElement === document.body) focusTaskControl(null, "edit");
     }
 
     function saveDayNoteFromModal() {
@@ -5339,10 +5448,11 @@
       }
     }
 
-    function toggleTask(id) {
+    function toggleTask(id, control) {
       tasks = tasks.map(task => task.id === id ? { ...task, done: !task.done } : task);
       persist();
       renderVisibleWeeks();
+      if (control) focusTaskControl(id, "toggle");
     }
 
     function toggleDayNote(id) {
@@ -5351,10 +5461,13 @@
       renderVisibleWeeks();
     }
 
-    function deleteTask(id) {
+    function deleteTask(id, control) {
       const task = tasks.find(item => item.id === id);
       if (!task) return;
+      const row = control?.closest(".task");
+      const nextId = row?.nextElementSibling?.dataset.taskId || row?.previousElementSibling?.dataset.taskId;
       openConfirmDialog({
+        trigger: control,
         title: "删除任务",
         message: `确定删除「${task.title}」？`,
         confirmText: "删除",
@@ -5365,6 +5478,7 @@
           persist();
           renderVisibleWeeks();
           showToast("已删除");
+          if (control) focusTaskControl(nextId, "edit");
         }
       });
     }
@@ -5604,7 +5718,7 @@
     function openBulk(dateKey) {
       const currentTitle = deriveTitleFromBlocks(readEditorBlocks());
       const currentCategory = normalizeCategoryId(els.taskCategory.value || settings.defaultCategory);
-      closeModal();
+      closeModal(false);
       const d = dateKey || toKey(new Date());
       els.bulkTitle.value = currentTitle;
       els.bulkCategory.value = currentCategory;
